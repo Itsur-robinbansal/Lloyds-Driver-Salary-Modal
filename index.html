@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<meta name="google-adsense-account" content="ca-pub-3237861324572377">
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Driver Salary Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 2.5rem;
+      color: #333;
+    }
+    .divider {
+      width: 100px;
+      height: 4px;
+      background-color: #007BFF;
+      margin: 0 auto 30px auto;
+      border-radius: 2px;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+    .column {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0 10px;
+    }
+    button {
+      padding: 10px 20px;
+      background: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .result, #details {
+      margin-top: 15px;
+    }
+    .column.centered {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    small {
+      color: #666;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Calculate Driver Salary</h1>
+  <h5><center>By @its_ur_RobinBansal</center></h5>
+  <div class="divider"></div>
+  <div class="container">
+    <!-- Column 1 -->
+    <div class="column">
+      <label for="km">Enter KM Driven</label>
+      <input type="number" id="km" placeholder="e.g., 120" />
+
+      <label for="bod">Difficulty Factor (2 to 5)</label>
+      <input type="number" id="bod" step="0.1" placeholder="e.g., 3" />
+
+      <label for="speed">Average Speed (10 to 50)</label>
+      <input type="number" id="speed" step="0.1" placeholder="e.g., 40" />
+
+      <label for="timeTaken">Time Taken (in hours)</label>
+      <input type="number" id="timeTaken" step="0.1" placeholder="e.g., 2.5" />
+
+      <small>* Enter only one: Difficulty Factor, Speed, or Time</small>
+    </div>
+
+    <!-- Column 2 -->
+    <div class="column">
+      <label for="rate">Per Hour Rate (Optional)</label>
+      <input type="number" id="rate" placeholder="e.g., 200" />
+
+      <label for="daily">Per Day Wage</label>
+      <input type="number" id="daily" placeholder="e.g., 1700" />
+
+      <label for="hours">Hours to Work</label>
+      <input type="number" id="hours" placeholder="e.g., 10" />
+
+      <small>* Fill only one section above</small>
+    </div>
+
+    <!-- Column 3 -->
+    <div class="column centered">
+      <button onclick="calculateSalary()">Calculate</button>
+      <div class="result" id="result">Result will appear here</div>
+    </div>
+
+    <!-- Column 4 -->
+    <div class="column">
+      <h3>Details</h3>
+      <div id="details"></div>
+    </div>
+  </div>
+
+  <script>
+    function calculateSalary() {
+      const km = parseFloat(document.getElementById("km").value);
+      const bodInput = document.getElementById("bod").value;
+      const speedInput = document.getElementById("speed").value;
+      const timeTakenInput = document.getElementById("timeTaken").value;
+      const rateInput = document.getElementById("rate").value;
+      const dailyInput = document.getElementById("daily").value;
+      const hoursInput = document.getElementById("hours").value;
+
+      if (!km || km <= 0) {
+        document.getElementById("result").textContent = "Please enter valid KM driven.";
+        return;
+      }
+
+      const fillCount = [bodInput, speedInput, timeTakenInput].filter(val => val).length;
+      if (fillCount !== 1) {
+        document.getElementById("result").textContent = "Please enter only ONE of: Difficulty Factor, Speed, or Time Taken.";
+        document.getElementById("details").textContent = "";
+        return;
+      }
+
+      let speed, bod, time;
+
+      if (bodInput) {
+        bod = parseFloat(bodInput);
+        if (bod < 2 || bod > 5) return alert("Difficulty Factor must be between 2 and 5.");
+        speed = 60 - 10 * bod;
+        time = km / speed;
+      } else if (speedInput) {
+        speed = parseFloat(speedInput);
+        if (speed < 10 || speed > 50) return alert("Speed must be between 10 and 60.");
+        bod = (60 - speed) / 10;
+        time = km / speed;
+      } else if (timeTakenInput) {
+        time = parseFloat(timeTakenInput);
+        if (time <= 0) return alert("Time Taken must be positive.");
+        speed = km / time;
+        bod = (60 - speed) / 10;
+      }
+
+      let rate = 170;
+      if (rateInput) {
+        rate = parseFloat(rateInput);
+      } else if (dailyInput && hoursInput) {
+        rate = parseFloat(dailyInput) / parseFloat(hoursInput);
+      }
+
+      const salary = rate * time;
+      const hours = Math.floor(time);
+      const minutes = Math.round((time - hours) * 60);
+
+      document.getElementById("result").textContent = `Driver Salary: ₹${salary.toFixed(2)}`;
+      document.getElementById("details").innerHTML = `
+        <p>Average Speed: ${speed.toFixed(2)} km/h</p>
+        <p>Difficulty Factor: ${bod.toFixed(2)}</p>
+        <p>Time Taken: ${hours} hour(s) ${minutes} minute(s)</p>
+        <p>Hourly Rate Used: ₹${rate.toFixed(2)}</p>
+        <p>Rate per KM: ₹${(salary / km).toFixed(2)}</p>
+      `;
+    }
+
+    // Lock inputs mutually
+    ["bod", "speed", "timeTaken"].forEach(id => {
+      document.getElementById(id).addEventListener("input", function () {
+        const filled = this.value !== "";
+        ["bod", "speed", "timeTaken"].forEach(otherId => {
+          if (otherId !== id) document.getElementById(otherId).disabled = filled;
+        });
+      });
+    });
+
+    ["rate", "daily", "hours"].forEach(id => {
+      document.getElementById(id).addEventListener("input", function () {
+        if (id === "rate" && this.value !== "") {
+          document.getElementById("daily").disabled = true;
+          document.getElementById("hours").disabled = true;
+        } else if ((id === "daily" || id === "hours") && this.value !== "") {
+          document.getElementById("rate").disabled = true;
+        } else {
+          document.getElementById("rate").disabled = false;
+          document.getElementById("daily").disabled = false;
+          document.getElementById("hours").disabled = false;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
